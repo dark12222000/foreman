@@ -5,10 +5,10 @@ _This is under development. Stuff will change. Nothing is set in stone yet. Ther
 Foreman is a process control wrapper for minecraft. It exposes a REST api with JSON (using CORS). Foreman will launch and monitor Minecraft, and allow you to remotely start/stop/restart as well as issue commands.  Foreman is independent of Minecraft versions, and thus will work fine with Bukkit or other modded versions. 
 
 # Install
-Foreman runs via __Nodejs__. You will probably want __Forever__ as well, which can be installed with _npm install foreman -g_ (You will probably need to do this as root or with sudo).  Otherwise, simply unpack the program somewhere, configure processes.json, and fire off the app with _forever start main.js_.
+Foreman runs via __Nodejs__. You will probably want __Forever__ as well, which can be installed with _npm install forever -g_ (You will probably need to do this as root or with sudo).  Otherwise, simply unpack the program somewhere, configure processes.json, and fire off the app with _forever start main.js_.
 
 # Configure
-Foreman pulls almost all of it's information from the included json file, processes.json.  Each possible server is specified in here, as are access keys.  Access Keys may either be in the top level, and act as universal keys (and work with each service) or may be specified within a service.
+Foreman pulls almost all of it's information from the included json file, processes.json.  Each possible server is specified in here, as are access keys.  Access Keys may either be in the top level, and act as universal keys (and work with every service) or may be specified within a service.
 
 The basic block for a service looks like
 
@@ -76,9 +76,9 @@ There are two exposed points currently:
 
 /start/:name
 
-This starts the service. If it's already running, it'll be restarted. (This will probably change).  The parameter key is __required__.
+This starts the service. If it's already running, it'll be restarted. (This will probably change).  The parameter _key_ is __required__.
 
 /send/:name
 
-This sends a command to the service (a newline will be added).  The parameter key is __required__.  The parameter cmd is also __required__.
+This sends a command to the service (a newline will be added).  The parameter _key_ is __required__.  The parameter _cmd_ is also __required__.
 
