@@ -8,6 +8,7 @@ var app = express();
 var processes = {};
 var autoProcesses = JSON.parse(fs.readFileSync('processes.json', 'utf8'));
 console.log('autoProcesses: ' + JSON.stringify(autoProcesses));
+
 //callbacks
 function restart(stream){
 	console.log('Process Died');
@@ -23,6 +24,7 @@ function spawn(args){
 	}
 	var myChild = child.spawn(args.cmd, args.args, args.options);
 	myChild.addListener('close', restart);
+	myChild.addListener('error', restart);
 	myChild.stdout.setEncoding('utf8');
 	myChild.stdout.on('data', handleOut);
 	myChild.stderr.setEncoding('utf8');
@@ -32,7 +34,10 @@ function spawn(args){
 }
 
 function isValidKey(name, key){
-	if(autoProcesses.keys.indexOf(key) > -1 || autoProcesses.name.keys.indexOf(key) > -1){
+	console.log('Authenticate '+key+' for '+name);
+	if(autoProcesses['keys'].indexOf(key) > -1){
+		return true;
+	}else if(autoProcesses[name].keys.indexOf(key) > -1){
 		return true;
 	}else{
 		return false;
@@ -48,18 +53,23 @@ app.all('/*', function(req, res, next){
 });
 
 app.get('/start/:name', function(req, res){
-		var newChild = autoProcesses[req.params.name];
-		var args = {};
-		args.name = req.params.name;
-		args.cmd = autoProcesses[req.params.name].cmd;
-		spawn(args);
-		var response = {};
-		response.status = 200;
-		response.msg = 'Service Started';
-		res.send(200, JSON.stringify(response));
+		if(isValidKey(req.params.name, req.query.key)){
+			var newChild = autoProcesses[req.params.name];
+			var args = {};
+			args.name = req.params.name;
+			args.cmd = autoProcesses[req.params.name].cmd;
+			spawn(args);
+			var response = {};
+			response.status = 200;
+			response.msg = 'Service Started';
+			res.send(200, JSON.stringify(response));
+		}else{
+			res.send(401);
+		}
 });
 
 app.get('/send/:name', function(req, res){
+	if(isValidKey(req.params.name, req.query.key)){
 		if(processes[req.params.name].stdin.writable && req.query.cmd){
 			processes[req.params.name].stdin.write(req.query.cmd + "\n", 'utf8');
 			console.log(req.query.cmd);
@@ -70,6 +80,9 @@ app.get('/send/:name', function(req, res){
 		}else{
 			res.send(500);
 		}
+	}else{
+		res.send(401);
+	}
 });
 
 for(var autoChild in autoProcesses){
@@ -84,9 +97,9 @@ for(var autoChild in autoProcesses){
 	}
 }
 //This will check our processes and restart them if needed
-setInterval(function(){
+// setInterval(function(){
 
-}, 1000);
+// }, 1000);
 
 app.listen(3000);
 console.log('Server started');
